@@ -1,4 +1,11 @@
 // File: src/map/skill.cpp
+//To implement this modification in your rAthena server:
+
+//Open the src/map/skill.cpp file.
+//Find the skill_hw_FIRE_IVY function and replace it with the provided code.
+//Add the skill_hw_FIRE_IVY function declaration to the appropriate header file (e.g., skill.hpp).
+//Add the corresponding line to register the skill in the skill_cast_db.cpp file.
+//Recompile your rAthena server.
 
 #include "map.hpp"
 #include "status.hpp"
