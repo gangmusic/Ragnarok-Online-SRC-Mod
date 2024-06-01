@@ -1,0 +1,66 @@
+//Access your rAthena server source code: Locate the directory where you have your rAthena server source code. This is where you'll make the modifications.
+//Navigate to the skill implementation file: In the source code directory, find the file responsible for handling skills. This file is usually named something like skill.cpp or skill.c.
+//Locate the function for Asura Strike: Inside the skill implementation file, locate the function that handles the Asura Strike skill. This function is where you'll make the modification.
+//Modify the function: Within the function for Asura Strike, implement the logic to slide the player one cell instead of teleporting. This involves calculating the direction from the caster to the target and checking if the cell one step in that direction is passable. If it is, move the player to that cell.
+//Compile the server: After making the modifications, compile your rAthena server to apply the changes. Ensure there are no compilation errors.
+//Test the modification: Start your server in a test environment and thoroughly test the Asura Strike skill to verify that it now slides the player one cell instead of teleporting.
+//Deploy to your live server: Once you've confirmed that the modification works as expected, you can deploy the changes to your live rAthena server.
+
+
+
+
+
+
+
+
+
+
+// In skill.cpp
+
+// Find the function that handles the Asura Strike skill, it might be something like this
+int skill_castend_damage_id(struct block_list *bl, struct block_list *src_bl, uint16 skill_id, uint16 skill_lv, unsigned int tick, int flag);
+
+int skill_castend_damage_id(struct block_list *bl, struct block_list *src_bl, uint16 skill_id, uint16 skill_lv, unsigned int tick, int flag) {
+    nullpo_ret(bl);
+
+    if (!src_bl || !src_bl->type || bl->type != BL_PC) {
+        return 0;
+    }
+
+    struct map_session_data *sd = BL_CAST(BL_PC, bl);
+
+    if (!sd) {
+        return 0;
+    }
+
+    // Check if the skill being casted is Asura Strike
+    if (skill_id == ASURA_SKILL_ID) {
+        struct map_session_data *src_sd = BL_CAST(BL_PC, src_bl);
+        if (src_sd) {
+            // Calculate the direction from the caster to the target
+            int x = src_sd->bl.x - sd->bl.x;
+            int y = src_sd->bl.y - sd->bl.y;
+            int dir = map_calc_dir(sd->bl.x, sd->bl.y, sd->bl.x + x, sd->bl.y + y);
+
+            // Slide 1 cell in the calculated direction
+            int new_x = sd->bl.x + dirx[dir];
+            int new_y = sd->bl.y + diry[dir];
+
+            // Check if the new position is valid
+            if (map_can_move(sd, sd->bl.m, new_x, new_y, CELL_CHKNOPASS)) {
+                sd->to_x = new_x;
+                sd->to_y = new_y;
+                clif_walkok(sd);
+                clif_movetoack(sd);
+            } else {
+                // If the new position is invalid, don't move
+                clif_skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0);
+                return 0;
+            }
+        }
+    }
+
+    // Do the regular Asura Strike damage calculation
+    // ...
+}
+
