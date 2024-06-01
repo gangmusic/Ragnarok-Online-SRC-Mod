@@ -1,0 +1,42 @@
+// File: src/map/skill.cpp
+
+#include "map.hpp"
+#include "status.hpp"
+#include "status_change.hpp"
+#include "mob.hpp"
+#include "pc.hpp"
+#include "skill.hpp"
+#include "skill_cast_db.hpp"
+#include "battle.hpp"
+
+void skill_hw_FIRE_IVY(TBL_PC *src, TBL_MOB *dst, int skill_lv, int skill_id, int skill_num) {
+    nullpo_retv(src);
+    nullpo_retv(dst);
+
+    // Check if the source and target are within range
+    if (!src->is_near_mob(dst, battle_config.monster_maxskill))
+        return;
+
+    // Check if the target is dead or in a status where skill casting is not allowed
+    if (dst->state.dead || dst->sc_data[SC_BAN_PICK])
+        return;
+
+    // Swap positions between source and target
+    if (src->m && dst->m) {
+        int srcx = src->bl.x, srcy = src->bl.y;
+        int dstx = dst->bl.x, dsty = dst->bl.y;
+
+        mob_setpos(dst, srcx, srcy);
+        pc_setpos(src, dstx, dsty, 3);
+
+        // Inform players about the position swap
+        clif_skill_nodamage(src, dst, skill_id, skill_lv, 1);
+        clif_skill_nodamage(dst, src, skill_id, skill_lv, 1);
+    }
+}
+
+// Add this function declaration to the appropriate header file, such as skill.hpp
+void skill_hw_FIRE_IVY(TBL_PC *src, TBL_MOB *dst, int skill_lv, int skill_id, int skill_num);
+
+// Add this line to the appropriate place in skill_cast_db.cpp to register the skill
+{ "HW_FIRE_IVY", skill_hw_FIRE_IVY, 1, 1, BF_NORMAL },
