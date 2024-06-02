@@ -1,0 +1,10 @@
+// Original code
+if( skill_id == PALADIN_DEFENDER_SKILL_ID ) {
+    // Reduce movement speed
+    pc_set_walkspeed(src, 50); // Example reduction to 50% of normal speed
+}
+
+// Modified code - removing movement speed modification
+if( skill_id == PALADIN_DEFENDER_SKILL_ID ) {
+    // No movement speed modification
+}
