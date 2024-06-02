@@ -1,0 +1,49 @@
+// In skill.cpp (or skill.hpp, depending on your project structure), define the skill function:
+
+// Define the skill function for Create Nugget
+int skill_create_nugget(struct map_session_data *sd, struct block_list *bl, int skill_id, int skill_lv, uint16 flag)
+{
+    int range = 5; // Adjust as needed
+    int skill_range = skill_get_range(skill_id, skill_lv);
+
+    // Check if the skill is in range
+    if (skill_range > range) {
+        clif_skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0);
+        return 0;
+    }
+
+    // Check if the target is valid
+    if (!bl) {
+        clif_skill_fail(sd, skill_id, USESKILL_FAIL_INVALID_TARGET, 0);
+        return 0;
+    }
+
+    // Check if the target is within the range
+    if (distance_bl(sd, bl) > range) {
+        clif_skill_fail(sd, skill_id, USESKILL_FAIL_OUT_OF_RANGE, 0);
+        return 0;
+    }
+
+    // Move the player to the target's cell
+    if (bl->type == BL_PC || (bl->type == BL_MOB && mob_get_distance((TBL_MOB *)bl) <= range)) {
+        struct map_session_data *target_sd = NULL;
+        if (bl->type == BL_PC) {
+            target_sd = (struct map_session_data *)bl;
+        } else if (bl->type == BL_MOB) {
+            struct mob_data *mob = (struct mob_data *)bl;
+            if (mob->master_id > 0) {
+                target_sd = map_id2sd(mob->master_id);
+            }
+        }
+        
+        if (target_sd) {
+            sd->to_x = target_sd->bl.x;
+            sd->to_y = target_sd->bl.y;
+            sd->to_map = target_sd->bl.m;
+            sd->state.gmaster = GM_SPECTATING; // Set state if needed
+            map_foreachinmap(clif_updatestate, sd->bl.m, BL_PC, &sd->bl, 1);
+        }
+    }
+
+    return 1;
+}
