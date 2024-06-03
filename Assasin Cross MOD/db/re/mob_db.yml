@@ -1,0 +1,22 @@
+- Id: 4000
+  SpriteName: "Clone"
+  Name: "Hallucination Clone"
+  Lv: 1
+  Hp: 1000
+  Sp: 0
+  Exp: 0
+  JExp: 0
+  Range1: 1
+  Atk1: 10
+  Atk2: 20
+  Def: 10
+  MDef: 10
+  Str: 10
+  Agi: 10
+  Vit: 10
+  Int: 10
+  Dex: 10
+  Luk: 10
+  Skills:
+    - Id: 4000
+      Lv: 1
