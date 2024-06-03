@@ -25,3 +25,10 @@ int skill_create_nugget(struct map_session_data *sd, struct block_list *bl, int 
 
     return 1;
 }
+
+
+//Find the skill_castend_damage_id function.
+//Add a case for your new skill.
+case <SKILL_ID>: // Replace <SKILL_ID> with the actual skill ID you will use
+    skill_create_nugget(sd, bl, skill_id, skill_lv, flag);
+    break;
