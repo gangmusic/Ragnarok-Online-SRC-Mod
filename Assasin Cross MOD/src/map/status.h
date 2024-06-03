@@ -1,0 +1,1 @@
+#define SC_HALLUCINATIONCLONE    376
