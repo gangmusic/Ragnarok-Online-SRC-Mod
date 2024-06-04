@@ -1,0 +1,24 @@
+src/login/loginclif.cpp
+method logclif_auth_ok
+
+find this :
+ 
+
+		WFIFOW(fd,header+n*size+4) = ntows(htons(ch_server[i].port)); // [!] LE byte order here [!]
+		memcpy(WFIFOP(fd,header+n*size+6), ch_server[i].name, 20);
+		WFIFOW(fd,header+n*size+26) = login_get_usercount( ch_server[i].users );
+
+
+
+
+replace for:
+
+		WFIFOW(fd,header+n*size+4) = ntows(htons(ch_server[i].port)); // [!] LE byte order here [!]
+		
+		// Concatenate the server name with the online user count [Hergel]
+		char buffer[20];
+		int users = ch_server[i].users;
+		snprintf(buffer, 20, "%s (%d)", ch_server[i].name, users);
+		memcpy(WFIFOP(fd, header+n*size+6), buffer, 20);
+
+		WFIFOW(fd,header+n*size+26) = login_get_usercount( ch_server[i].users );
