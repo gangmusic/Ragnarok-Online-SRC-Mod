@@ -1,1 +1,5 @@
-a
+//Step 5: Add Skill to High Priest Class
+//Ensure that the High Priest class has access to the new skill by modifying the job_skill database.
+
+// Edit db/job_exp.txt to add the skill for High Priest (job ID 0x18)
+{ "PR_AUTOATTACKSUMMON", 1001, JT_HIGH_PRIEST }
