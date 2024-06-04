@@ -1,0 +1,139 @@
+Steps to Implement Character Slot Purchase
+Create an Item or NPC for Purchasing Slots:
+
+You can create a special item or an NPC that players can use to purchase additional character slots.
+Modify the Character Creation Logic:
+
+You need to modify the server's source code to check if the player has the required item or has purchased an additional slot before allowing character creation.
+Detailed Implementation
+1. Create an Item or NPC
+You can create an NPC that sells character slots. Here's an example script for an NPC that sells character slots:
+
+NPC Script (character_slot_npc.txt)
+prontera,150,150,5	script	Character Slot Seller	1002,{
+	mes "[Character Slot Seller]";
+	mes "Hello! I can sell you additional character slots.";
+	mes "Each additional slot costs 10,000,000 Zeny.";
+	next;
+	if (Zeny < 10000000) {
+		mes "[Character Slot Seller]";
+		mes "You don't have enough Zeny.";
+		close;
+	}
+	mes "[Character Slot Seller]";
+	mes "Do you want to buy an additional character slot?";
+	if (select("Yes:No") == 2) {
+		close;
+	}
+	set Zeny, Zeny - 10000000;
+	set #CHARACTER_SLOTS, #CHARACTER_SLOTS + 1;
+	mes "[Character Slot Seller]";
+	mes "You have purchased an additional character slot.";
+	close;
+}
+
+
+
+2. Modify the Character Creation Logic
+Modify the source code to check for the additional character slots before allowing character creation. This requires editing the character creation function in the server's source code.
+
+Modify char.c in src/char Directory
+
+Open src/char/char.c.
+Locate the character creation function char_create.
+Example snippet from char_create function (you need to integrate your check here):
+
+int char_create(...) {
+    // Existing code...
+    
+    // Maximum number of character slots normally allowed
+    int max_slots = 9; // Default maximum number of slots
+
+    // Get the number of additional slots purchased by the player
+    int additional_slots = 0;
+
+    // Retrieve additional slots from the database (or however you store it)
+    // Example: Use SQL to fetch the value
+    char sql_query[256];
+    snprintf(sql_query, sizeof(sql_query), "SELECT additional_slots FROM login WHERE account_id='%d'", account_id);
+    // Execute the query and set the additional_slots variable
+
+    // Update the maximum slots
+    max_slots += additional_slots;
+
+    // Check if the player already has the maximum number of characters
+    if (char_count >= max_slots) {
+        // Send error message to the client
+        clif_char_creation_failed(fd, CHAR_CREATE_FULL);
+        return -1;
+    }
+
+    // Existing code for character creation...
+
+    return 0;
+}
+Add the SQL code to retrieve the number of additional slots from the database. This can be done using the existing database functions in the codebase. The details will depend on how your database access is set up.
+
+Add a new field additional_slots to the login table in your database to store the number of additional character slots a player has purchased.
+
+Example SQL Query to Add Field:
+
+ALTER TABLE login ADD COLUMN additional_slots INT DEFAULT 0;
+Update the char_create function to include the SQL retrieval:
+
+
+#include "char_sql.h" // Include necessary headers for SQL
+
+int char_create(...) {
+    // Existing code...
+    
+    int max_slots = 9; // Default maximum number of slots
+    int additional_slots = 0;
+
+    // SQL Query to get the additional slots
+    SqlStmt* stmt;
+    stmt = SqlStmt_Malloc(sql_handle);
+    if (stmt == NULL) {
+        SqlStmt_ShowDebug(stmt);
+        return SQL_ERROR;
+    }
+    if (SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT additional_slots FROM login WHERE account_id = ?") ||
+        SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &account_id, sizeof(account_id)) ||
+        SQL_ERROR == SqlStmt_Execute(stmt)) {
+        SqlStmt_ShowDebug(stmt);
+        SqlStmt_Free(stmt);
+        return SQL_ERROR;
+    }
+    if (SQL_SUCCESS == SqlStmt_NextRow(stmt)) {
+        SqlStmt_GetInt(stmt, 0, &additional_slots);
+    }
+    SqlStmt_Free(stmt);
+
+    max_slots += additional_slots;
+
+    // Check if the player already has the maximum number of characters
+    if (char_count >= max_slots) {
+        // Send error message to the client
+        clif_char_creation_failed(fd, CHAR_CREATE_FULL);
+        return -1;
+    }
+
+    // Existing code for character creation...
+
+    return 0;
+}
+Recompile the Server
+After making these changes, recompile your server to apply the modifications:
+
+
+make clean
+make server
+
+
+
+
+Test the Implementation
+Launch your server.
+Use the NPC to buy additional character slots.
+Try creating new characters and ensure the slot limit is respected.
+This implementation allows players to purchase additional character slots and modifies the character creation logic to check for these additional slots before allowing character creation.
