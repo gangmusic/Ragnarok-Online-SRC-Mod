@@ -1,1 +1,49 @@
-a
+//Step 1: Define the Skill in the Skill Database
+//First, modify the skill definition in db/re/skill_db.yml (or db/pre-re/skill_db.yml depending on your setup).
+
+- Id: 1001
+  Name: "Auto Attack Summon"
+  Description: "Summon monsters to defend the caster"
+  MaxLevel: 3
+  Type: "2"  # Active skill
+  TargetType: "2"  # Ground target
+  DamageType: "none"
+  Hit: "0"
+  Inf: "5"
+  Element: "neutral"
+  Nk: "0"
+  SplashArea: "0"
+  MaxCount: "0"
+  SkillRange: "9"
+  AfterCastActDelay: "1000"  # Delay after cast in milliseconds
+  AfterCastWalkDelay: "0"
+  Cooldown: "10000"  # Cooldown in milliseconds
+  FixedCastTime: "2000"  # Cast time in milliseconds
+  VariableCastTime: "0"
+  Duration1: "300000"  # Duration in milliseconds (5 minutes)
+  Duration2: "0"
+  HP: "0"
+  SP: "0"
+  Zeny: "0"
+  RequiredStatus: "0"
+  RequiredStatusLevel: "0"
+  WeaponType: "0"
+  SplashType: "0"
+  Inf2: "0"
+  MaxFlags: "0"
+  NoDamage: "true"
+  KnockBack: "0"
+  BlowCount: "0"
+  DamageCount: "0"
+  Inf3: "0"
+  Job: "0"
+  ItemRequired: []
+  ItemConsumed: []
+  SpiritSphereCost: "0"
+  WeaponTypeRequired: []
+  AmmoTypeRequired: []
+  CastCancel: "true"
+  CastTarget: "true"
+  OverCharge: "false"
+  FailNotice: "true"
+  Monuments: []
