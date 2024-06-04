@@ -32,3 +32,40 @@ case PR_AUTOATTACKSUMMON: {
 
     break;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Step 3: Implement the Summon Monster Function
+//Add a helper function in src/map/skill.cpp to handle monster summoning logic.
+#include "../common/memmgr.h" // Ensure this include for memory management functions
+
+// Summon a monster to follow the caster
+void summon_monster(struct map_session_data* sd, int class_, int duration) {
+    struct mob_data* md;
+    int x = sd->bl.x;
+    int y = sd->bl.y;
+    int m = sd->bl.m;
+
+    // Summon the monster
+    md = mob_once_spawn(sd, m, x, y, "", class_, "", SZ_SMALL, AI_SUMMON);
+    if (!md) return;
+
+    // Set the monster to follow the caster
+    md->master_id = sd->bl.id;
+    md->status.skilltimer = add_timer(gettick() + duration, mob_delete_timer, md->bl.id, 0);
+    md->mode = MD_CANATTACK | MD_CANMOVE | MD_CANCAST | MD_CANATTACKSKILL | MD_CANMOVESKILL; // Enable skill usage
+
+    // Additional behavior setup can go here
+}
