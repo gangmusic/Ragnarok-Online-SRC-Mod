@@ -1,0 +1,89 @@
+In file /src/map/script_constants.hpp:
+
+After this:
+*********
+	export_constant2("bLongHPGainValue",SP_LONG_HP_GAIN_VALUE);
+	export_constant2("bMagicSubSize",SP_MAGIC_SUBSIZE);
+	export_constant2("bCritDefRate",SP_CRIT_DEF_RATE);
+*********
+
+Add:
+*********
+	// bAntiDispel
+	export_constant2("bAntiDispel",SP_NO_DISPELL);
+*********
+
+
+In file /src/map/map.hpp:
+
+After this:
+*********
+	SP_IGNORE_DEF_CLASS_RATE, SP_REGEN_PERCENT_HP, SP_REGEN_PERCENT_SP, SP_SKILL_DELAY, SP_NO_WALK_DELAY, //2088-2093
+	SP_LONG_SP_GAIN_VALUE, SP_LONG_HP_GAIN_VALUE, SP_SHORT_ATK_RATE, SP_MAGIC_SUBSIZE, SP_CRIT_DEF_RATE, // 2094-2098
+*********
+
+Add:
+*********
+	SP_NO_DISPELL,
+*********
+
+
+In file /src/map/pc.cpp:
+
+After this:
+*********
+		case SP_NO_MADO_FUEL:
+			if (sd->state.lr_flag != 2)
+				sd->special_state.no_mado_fuel = 1;
+			break;
+		case SP_NO_WALK_DELAY:
+			if (sd->state.lr_flag != 2)
+				sd->special_state.no_walk_delay = 1;
+			break;
+*********
+
+Add:
+*********
+		// bAntiDispel
+		case SP_NO_DISPELL:
+			if (sd->state.lr_flag != 2)
+				sd->special_state.no_dispell = cap_value(val,0,100);
+			break;
+*********
+
+
+In file /src/map/pc.hpp:
+
+After this:
+*********
+		unsigned int bonus_coma : 1;
+		unsigned int no_mado_fuel : 1; // Disable Magic_Gear_Fuel consumption [Secret]
+		unsigned int no_walk_delay : 1;
+*********
+
+Add:
+*********
+		unsigned char no_dispell; // bAntiDispel
+*********
+
+In file /src/map/skill.cpp:
+
+*********
+
+After this:
+*********
+				if (sd)
+					clif_skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
+				break;
+			}
+			if(status_isimmune(bl))
+				break;
+*********
+Add:
+*********
+			// bAntiDispel
+			if(dstsd && dstsd->special_state.no_dispell && (rnd() % 100) < dstsd->special_state.no_dispell){
+				clif_skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
+				break;
+			}
+*********
