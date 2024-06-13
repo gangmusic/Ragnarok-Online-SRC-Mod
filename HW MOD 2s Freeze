@@ -1,0 +1,57 @@
+#include "map/skill.h"
+#include "map/status.h"
+#include "map/pc.h"
+#include "map/mob.h"
+
+// Function to apply a guaranteed 2-second freeze regardless of immunity or stats
+void apply_forced_freeze(struct block_list *bl, int duration) {
+    struct status_change *sc = status_get_sc(bl);
+    if (!sc) return;
+
+    if (!status_isimmune(bl) || !sc->data[SC_FREEZE]) {
+        status_change_start(bl, SC_FREEZE, 10000, 0, 0, 0, duration * 1000, 0);
+    }
+}
+
+int skill_castend_damage_id(struct block_list *src, struct block_list *bl, struct skill_castend_damage *s, uint16 tick, uint16 flag) {
+    struct map_session_data *sd;
+    struct status_change *sc;
+    struct status_data *status;
+    int damage = 0, skill_lv = s->skill_lv;
+
+    nullpo_retr(0, src);
+    nullpo_retr(0, bl);
+    
+    // Original Storm Gust logic
+    if (s->skill_id == WZ_STORMGUST) {
+        if ((sc = status_get_sc(bl)) != NULL && sc->data[SC_FREEZE]) {
+            return 0;
+        }
+
+        damage = skill_calc_damage(src, bl, s, tick, flag);
+        if (damage > 0) {
+            clif_damage(src, bl, tick, 0, 0, 0, 0, 0, s->skill_id, skill_lv, 6);
+            status_zap(bl, &status_get_hp(bl), damage, 0, 1);
+            if (bl->type == BL_PC) {
+                sd = BL_UCAST(BL_PC, bl);
+                if (sd && pc_isdead(sd)) return 1;
+            }
+        }
+
+        // Apply forced freeze for 2 seconds
+        apply_forced_freeze(bl, 2);
+
+        // Apply normal freeze logic
+        if (!sc || !sc->data[SC_FREEZE]) {
+            int chance = skill_lv * 10; // Example: 10% chance per skill level
+            if (rand() % 100 < chance) {
+                int freeze_duration = 5000 + (skill_lv * 2000); // Base 5 seconds + 2 seconds per skill level
+                status_change_start(src, SC_FREEZE, 10000, 0, 0, 0, freeze_duration, 0);
+            }
+        }
+        return 0;
+    }
+
+    // Call the original function for other skills
+    return skill_castend_damage_id_original(src, bl, s, tick, flag);
+}
