@@ -2,7 +2,8 @@
 #include "map/status.h"
 #include "map/pc.h"
 #include "map/mob.h"
-
+//First, locate and open the "skill.c" file within your rAthena server source code. This file contains the logic for all the skills.
+//We need to modify the "skill_castend_damage_id" function to include our custom freeze logic. Here’s how you can do it
 // Function to apply a guaranteed 2-second freeze regardless of immunity or stats
 void apply_forced_freeze(struct block_list *bl, int duration) {
     struct status_change *sc = status_get_sc(bl);
