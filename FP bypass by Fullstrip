@@ -1,0 +1,55 @@
+#include "map/skill.h"
+#include "map/status.h"
+#include "map/pc.h"
+#include "map/mob.h"
+#include "map/battle.h"
+
+// Function to check if Stalker is under Soul Link
+bool is_stalker_soullinked(struct map_session_data *sd) {
+    struct status_change *sc = status_get_sc(&sd->bl);
+    if (!sc) return false;
+    return sc->data[SC_SPIRIT] && sc->data[SC_SPIRIT]->val2 == SL_STALKER;
+}
+
+int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, struct skill_castend_nodamage *s, uint16 tick, uint16 flag) {
+    struct map_session_data *sd;
+    struct map_session_data *tsd;
+    struct status_change *sc;
+    struct status_change *tsc;
+    int skill_id = s->skill_id;
+    int skill_lv = s->skill_lv;
+
+    nullpo_ret(src);
+    nullpo_ret(bl);
+    sd = BL_CAST(BL_PC, src);
+    tsd = BL_CAST(BL_PC, bl);
+
+    switch (skill_id) {
+        case ST_FULLSTRIP:
+            // Original Full Strip logic
+            if (tsd && !battle_config.invincible_nodamage && !status_isimmune(bl)) {
+                int strip_chance = skill_lv * 5; // Example: base 5% per skill level
+                bool bypass_fcp = false;
+                
+                // Check for Soul Link effect on Stalker
+                if (sd && is_stalker_soullinked(sd)) {
+                    if (rand() % 100 < 5) { // 5% chance to bypass FCP
+                        bypass_fcp = true;
+                    }
+                }
+
+                if (bypass_fcp || !tsc->data[SC_FULLCHEMICALPROTECTION]) {
+                    clif_skill_nodamage(src, bl, skill_id, skill_lv, 1);
+                    skill_strip_equip(src, bl, 4, skill_lv, strip_chance);
+                } else {
+                    clif_skill_nodamage(src, bl, skill_id, skill_lv, 0);
+                }
+            }
+            return 0;
+
+        // Other skills logic...
+    }
+
+    // Call the original function for other skills
+    return skill_castend_nodamage_id_original(src, bl, s, tick, flag);
+}
