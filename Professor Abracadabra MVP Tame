@@ -1,0 +1,27 @@
+// In src/map/skill.c, add the custom taming logic
+
+#include "mob.h" // Ensure you include the mob header for mob functions
+
+void skill_custom_abracadabra_tame(struct map_session_data* sd, int lv) {
+    struct block_list* bl = map_id2bl(sd->status.target_id);
+    if (bl && bl->type == BL_MOB) {
+        struct mob_data* md = BL_CAST(BL_MOB, bl);
+        if (md && md->db && (md->db->mexp > 0)) { // Check if it's an MVP
+            int success_rate = 50; // Set a fixed success rate for taming MVPs
+            if (rand() % 100 < success_rate) {
+                // Tame the MVP
+                clif_skill_nodamage(&md->bl, &sd->bl, 289, lv, 1);
+                pet_create_egg(sd, md->class_, false);
+                map_freeblock(&md->bl); // Remove the MVP from the map
+            } else {
+                // Taming failed
+                clif_skill_fail(sd, 289, USESKILL_FAIL_LEVEL, 0);
+            }
+        } else {
+            // Not an MVP
+            clif_skill_fail(sd, 289, USESKILL_FAIL_LEVEL, 0);
+        }
+    }
+}
+
+// Hook this function into the skill usage logic
